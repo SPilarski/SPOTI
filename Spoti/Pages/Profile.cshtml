@@ -1,0 +1,39 @@
+﻿@page
+@model Spoti.Pages.ProfileModel
+
+
+<h2>@ViewData["Title"]</h2>
+
+<p>Welcome, @Model.Me.DisplayName!</p>
+
+<h3>Last 5 Albums</h3>
+<div class="container">
+    <div class="row">
+        @{
+            int count = 0;
+            foreach (var album in Model.LastFiveAlbums)
+            {
+                if (count % 3 == 0 && count > 0)
+                {
+                    @:</div><div class="row">
+                }
+                <div class="col-md-4 mt-3">
+                    <div class="card-group">
+                        <div class="card m-2">
+                            <img class="card-img-top" src="@album.Images[0].Url" alt="Card image cap">
+                            <div class="card-body">
+                                <h5 class="card-title">@album.Name</h5>
+                                <p class="card-text">@album.Artists[0].Name.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                count++;
+            }
+        }
+    </div>
+</div>
+
+<form method="post">
+    <button type="submit">Logout</button>
+</form>
