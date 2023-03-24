@@ -21,26 +21,42 @@ namespace Spoti.Pages
             _spotifyClientBuilder = spotifyClientBuilder;
         }
 
-        public async Task OnGet()
+        public async Task<IActionResult> OnGet()
         {
-            var spotify = await _spotifyClientBuilder.BuildClient();
-
-            int offset = int.TryParse(Request.Query["Offset"], out offset) ? offset : 0;
-            var playlistRequest = new PlaylistCurrentUsersRequest
+            if (!User.Identity.IsAuthenticated)
             {
-                Limit = LIMIT,
-                Offset = offset
-            };
-            Playlists = await spotify.Playlists.CurrentUsers(playlistRequest);
-
-            if (Playlists.Next != null)
-            {
-                Next = Url.Page("Index", new { Offset = offset + LIMIT });
+                // Redirect to the login page or display an appropriate message
+                return RedirectToPage("/Login");
             }
-            if (Playlists.Previous != null)
+
+            try
             {
-                Previous = Url.Page("Index", values: new { Offset = offset - LIMIT });
+                var spotify = await _spotifyClientBuilder.BuildClient();
+
+                int offset = int.TryParse(Request.Query["Offset"], out offset) ? offset : 0;
+                var playlistRequest = new PlaylistCurrentUsersRequest
+                {
+                    Limit = LIMIT,
+                    Offset = offset
+                };
+                Playlists = await spotify.Playlists.CurrentUsers(playlistRequest);
+
+                if (Playlists.Next != null)
+                {
+                    Next = Url.Page("Index", new { Offset = offset + LIMIT });
+                }
+                if (Playlists.Previous != null)
+                {
+                    Previous = Url.Page("Index", values: new { Offset = offset - LIMIT });
+                }
             }
+            catch (InvalidOperationException ex)
+            {
+                // Handle the error by displaying a message or logging the exception
+                // For example, you can set an ErrorMessage property and display it on the page
+            }
+
+            return Page();
         }
     }
 }

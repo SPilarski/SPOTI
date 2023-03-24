@@ -2,11 +2,6 @@
 @model Spoti.Pages.ProfileModel
 
 
-<h2>@ViewData["Title"]</h2>
-
-<p>Welcome, @Model.Me.DisplayName!</p>
-
-<h3>Last 5 Albums</h3>
 <div class="container">
     <div class="row">
         @{
@@ -24,6 +19,13 @@
                             <div class="card-body">
                                 <h5 class="card-title">@album.Name</h5>
                                 <p class="card-text">@album.Artists[0].Name.</p>
+                                  <form method="post">
+        <input type="hidden" name="spotifyAlbumId" value="@album.Id" />
+        <input type="hidden" name="name" value="@album.Name" />
+        <input type="hidden" name="artist" value="@album.Artists[0].Name" />
+        <input type="hidden" name="imageUrl" value="@album.Images[0].Url" />
+        <button type="submit" asp-page-handler="SaveAlbum" class="btn btn-primary">Add to My Albums</button>
+    </form>
                             </div>
                         </div>
                     </div>

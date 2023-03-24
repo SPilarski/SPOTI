@@ -28,6 +28,7 @@ namespace Spoti
             services.AddHttpContextAccessor();
             services.AddSingleton(SpotifyClientConfig.CreateDefault());
             services.AddScoped<SpotifyClientBuilder>();
+            services.AddDbContext<ApplicationDbContext>();
 
             services.AddAuthorization(options =>
             {
@@ -54,7 +55,7 @@ namespace Spoti
                   options.SaveTokens = true;
 
                   var scopes = new List<string> {
-            UserReadEmail, UserReadPrivate, PlaylistReadPrivate, PlaylistReadCollaborative, UserReadRecentlyPlayed
+            UserReadEmail, UserReadPrivate, PlaylistReadPrivate, PlaylistReadCollaborative, UserReadRecentlyPlayed, UserTopRead
                 };
                   options.Scope.Add(string.Join(",", scopes));
               });
@@ -62,6 +63,8 @@ namespace Spoti
               .AddRazorPagesOptions(options =>
               {
                   options.Conventions.AuthorizeFolder("/", "Spotify");
+                  options.Conventions.AllowAnonymousToPage("/Index");
+
               });
         }
 

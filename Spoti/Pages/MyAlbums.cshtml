@@ -1,0 +1,27 @@
+﻿@page
+@model Spoti.Pages.MyAlbumsModel
+@{
+    ViewData["Title"] = "My Albums";
+}
+
+<h2>My Albums</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Album</th>
+            <th>Artist</th>
+            <th>Rating</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var album in Model.UserAlbums)
+        {
+            <tr>
+                <td>@album.Name</td>
+                <td>@album.Artist</td>
+                <td>@album.Rating</td>
+            </tr>
+        }
+    </tbody>
+</table>
