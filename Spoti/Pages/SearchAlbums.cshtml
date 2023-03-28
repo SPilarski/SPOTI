@@ -24,7 +24,7 @@
                             var ratedAlbum = Model.RatedAlbums.FirstOrDefault(ra => ra.SpotifyAlbumId == album.Id);
                             if (ratedAlbum == null)
                             {
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ratingModal" data-spotifyalbumid="@album.Id" data-name="@album.Name" data-artist="@album.Artists[0].Name" data-imageurl="@album.Images[0].Url">Add to My Albums</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ratingModal" data-spotifyalbumid="@album.Id" data-name="@album.Name" data-artist="@album.Artists[0].Name" data-imageurl="@album.Images[0].Url">Dodaj do listy!</button>
                             }
                             else
                             {

@@ -1,5 +1,4 @@
-﻿// ApplicationDbContext.cs
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Spoti;
 
 public class ApplicationDbContext : DbContext

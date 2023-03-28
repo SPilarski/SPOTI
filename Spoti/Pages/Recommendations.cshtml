@@ -1,17 +1,27 @@
 ﻿@page
 @model Spoti.Pages.RecommendationsModel
-\
 
 <div class="container">
     <div class="row">
         <div class="col-md-12">
+            <h2 class="mt-4 mb-4">Rekomendacje</h2>
+            <div class="mb-4">
+                <a href="?recommendationType=recent" class="btn btn-primary">Ostatnio przesłuchane</a>
+                <a href="?recommendationType=top" class="btn btn-primary">Ulubione</a>
+                <a asp-page-handler="CreatePlaylist" class="btn btn-success">Stwórz playlistę</a>
+
+                
+
+
+
+            </div>
             @if (Model.NotEnoughListenedTracks)
             {
-                <h2 class="mt-4 mb-4">Za mało przesłuchanych utworów, lista popularnych albumów:</h2>
+                <h3 class="mb-4">Za mało przesłuchanych utworów, lista popularnych albumów:</h3>
             }
             else
             {
-                <h2 class="mt-4 mb-4">Polecane albumy</h2>
+                <h3 class="mb-4">Polecane albumy</h3>
             }
             <div class="row">
                 @foreach (var album in Model.RecommendedAlbums)
@@ -28,8 +38,6 @@
                     </div>
                 }
             </div>
-        </div>
-
         </div>
     </div>
 </div>

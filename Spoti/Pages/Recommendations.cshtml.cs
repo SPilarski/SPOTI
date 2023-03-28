@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
@@ -9,6 +10,8 @@ namespace Spoti.Pages
 {
     public class RecommendationsModel : PageModel
     {
+        private readonly ApplicationDbContext _dbContext;
+
         public bool NotEnoughListenedTracks { get; set; }
         private readonly SpotifyClientBuilder _spotifyClientBuilder;
         private readonly ILogger<RecommendationsModel> _logger;
@@ -22,13 +25,50 @@ namespace Spoti.Pages
         public IList<FullTrack> RecommendedTracks { get; set; }
         public IList<SimpleAlbum> RecommendedAlbums { get; set; }
 
-        public async Task OnGet()
+        public async Task OnGet(string recommendationType = "recent")
+        {
+            await GetRecommendations(recommendationType);
+        }
+
+        public async Task<IActionResult> OnGetCreatePlaylist()
+        {
+            await GetRecommendations();
+
+            var spotify = await _spotifyClientBuilder.BuildClient();
+            var user = await spotify.UserProfile.Current();
+            var playlistName = "Rekomendacje";
+
+            // Create a new playlist
+            var playlist = await spotify.Playlists.Create(user.Id, new PlaylistCreateRequest(playlistName));
+
+            // Get top 10 recommended tracks
+            var topRecommendedTracks = RecommendedTracks.Take(15).Select(t => t.Uri).ToList();
+
+            // Add tracks to the playlist
+            await spotify.Playlists.AddItems(playlist.Id, new PlaylistAddItemsRequest(topRecommendedTracks));
+
+            return RedirectToPage("./Recommendations");
+        }
+
+        private async Task GetRecommendations(string recommendationType = "recent")
         {
             var spotify = await _spotifyClientBuilder.BuildClient();
 
-            var topTracks = await spotify.Personalization.GetTopTracks();
+            List<string> seedTrackIds;
 
-            if (topTracks.Items.Count == 0)
+            if (recommendationType == "top")
+            {
+                var topTracks = await spotify.Personalization.GetTopTracks();
+                seedTrackIds = topTracks.Items.Select(track => track.Id).Take(2).ToList();
+            }
+
+            else
+            {
+                var recentlyPlayedTracks = await spotify.Player.GetRecentlyPlayed();
+                seedTrackIds = recentlyPlayedTracks.Items.Select(item => item.Track.Id).Take(2).ToList();
+            }
+
+            if (seedTrackIds.Count == 0)
             {
                 NotEnoughListenedTracks = true;
 
@@ -38,8 +78,6 @@ namespace Spoti.Pages
 
                 return;
             }
-
-            var seedTrackIds = topTracks.Items.Select(track => track.Id).Take(2).ToList();
 
             var recommendationsRequest = new RecommendationsRequest
             {
@@ -59,7 +97,7 @@ namespace Spoti.Pages
 
             RecommendedAlbums = tracksResponse.Tracks
                 .Select(t => t.Album)
-                 .Where(a => a.TotalTracks > 1)
+                .Where(a => a.TotalTracks > 1)
                 .GroupBy(a => a.Id)
                 .Select(g => g.First())
                 .ToList();

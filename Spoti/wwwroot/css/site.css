@@ -189,3 +189,21 @@ body {
     font-weight: bold;
     color: #ff6347;
 }
+.album-table th {
+    cursor: pointer;
+}
+
+.album-cover {
+    height: 80px;
+    margin-right: 10px;
+    width: 80px;
+}
+
+.table-actions {
+    display: flex;
+    flex-direction: row;
+}
+
+    .table-actions button {
+        margin-right: 5px;
+    }

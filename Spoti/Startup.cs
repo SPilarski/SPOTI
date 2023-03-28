@@ -55,7 +55,8 @@ namespace Spoti
                   options.SaveTokens = true;
 
                   var scopes = new List<string> {
-            UserReadEmail, UserReadPrivate, PlaylistReadPrivate, PlaylistReadCollaborative, UserReadRecentlyPlayed, UserTopRead
+            UserReadEmail, UserReadPrivate, PlaylistReadPrivate, PlaylistReadCollaborative, UserReadRecentlyPlayed, UserTopRead, PlaylistModifyPublic,
+    PlaylistModifyPrivate
                 };
                   options.Scope.Add(string.Join(",", scopes));
               });
