@@ -16,11 +16,53 @@ namespace Spoti.Pages
         public MyAlbumsModel(SpotifyClientBuilder spotifyClientBuilder)
         {
             _spotifyClientBuilder = spotifyClientBuilder;
+            UserAlbums = new List<Album>();
         }
 
         public List<Album> UserAlbums { get; set; }
+        public string SortOrder { get; set; }
+        public async Task<IActionResult> OnGetAsync(string sortOrder)
+        {
+            SortOrder = sortOrder ?? "";
 
-        public async Task<IActionResult> OnGetAsync()
+            await LoadUserAlbums();
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAlbumAsync(int albumId)
+        {
+            using (var db = new ApplicationDbContext())
+            {
+                var album = await db.Albums.FindAsync(albumId);
+                if (album != null)
+                {
+                    db.Albums.Remove(album);
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            await LoadUserAlbums();
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostEditAlbumRatingAsync(int albumId, int rating)
+        {
+            using (var db = new ApplicationDbContext())
+            {
+                var album = await db.Albums.FindAsync(albumId);
+                if (album != null)
+                {
+                    album.Rating = rating;
+                    db.Entry(album).State = EntityState.Modified;
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            await LoadUserAlbums();
+            return RedirectToPage(); // Przekieruj na tê sam¹ stronê, aby unikn¹æ zmiany adresu URL.
+        }
+
+        private async Task LoadUserAlbums()
         {
             var spotify = await _spotifyClientBuilder.BuildClient();
             var me = await spotify.UserProfile.Current();
@@ -36,12 +78,30 @@ namespace Spoti.Pages
                     await db.SaveChangesAsync();
                 }
 
-                UserAlbums = await db.Albums
-                    .Where(a => a.UserId == userId)
-                    .ToListAsync();
-            }
+                var albumsQuery = db.Albums.Where(a => a.UserId == userId);
 
-            return Page();
+                if (SortOrder == "desc")
+                {
+                    albumsQuery = albumsQuery.OrderByDescending(a => a.Rating);
+                }
+                else
+                {
+                    albumsQuery = albumsQuery.OrderBy(a => a.Rating);
+                }
+
+                var albumsWithoutImageUrl = await albumsQuery.ToListAsync();
+
+                foreach (var album in albumsWithoutImageUrl)
+                {
+                    var albumInfo = await spotify.Albums.Get(album.SpotifyAlbumId);
+                    album.ImageUrl = albumInfo.Images.FirstOrDefault()?.Url;
+                }
+
+                UserAlbums = albumsWithoutImageUrl;
+            }
         }
+
+
+
     }
 }

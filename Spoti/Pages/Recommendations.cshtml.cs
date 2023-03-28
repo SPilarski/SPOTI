@@ -9,6 +9,7 @@ namespace Spoti.Pages
 {
     public class RecommendationsModel : PageModel
     {
+        public bool NotEnoughListenedTracks { get; set; }
         private readonly SpotifyClientBuilder _spotifyClientBuilder;
         private readonly ILogger<RecommendationsModel> _logger;
 
@@ -19,18 +20,26 @@ namespace Spoti.Pages
         }
 
         public IList<FullTrack> RecommendedTracks { get; set; }
+        public IList<SimpleAlbum> RecommendedAlbums { get; set; }
 
         public async Task OnGet()
         {
             var spotify = await _spotifyClientBuilder.BuildClient();
 
-            // Fetch user's top tracks as seed data
             var topTracks = await spotify.Personalization.GetTopTracks();
-            _logger.LogInformation("Top Tracks: {TopTracks}", topTracks.Items.Select(t => t.Name));
 
-            // Use the seed data to generate recommendations
-            var seedTrackIds = topTracks.Items.Select(track => track.Id).Take(5).ToList();
-            _logger.LogInformation("Seed Track IDs: {SeedTrackIds}", seedTrackIds);
+            if (topTracks.Items.Count == 0)
+            {
+                NotEnoughListenedTracks = true;
+
+                // Pobierz popularne albumy (przyk³ad z 20 popularnych albumów)
+                var popularAlbums = await spotify.Browse.GetNewReleases(new NewReleasesRequest { Limit = 20 });
+                RecommendedAlbums = popularAlbums.Albums.Items;
+
+                return;
+            }
+
+            var seedTrackIds = topTracks.Items.Select(track => track.Id).Take(2).ToList();
 
             var recommendationsRequest = new RecommendationsRequest
             {
@@ -42,13 +51,18 @@ namespace Spoti.Pages
             }
 
             var recommendations = await spotify.Browse.GetRecommendations(recommendationsRequest);
-            _logger.LogInformation("Recommendations: {Recommendations}", recommendations.Tracks.Select(t => t.Name));
 
             var trackIds = recommendations.Tracks.Select(t => t.Id).ToList();
-            _logger.LogInformation("Recommended Track IDs: {TrackIds}", trackIds);
 
             var tracksResponse = await spotify.Tracks.GetSeveral(new TracksRequest(trackIds));
             RecommendedTracks = tracksResponse.Tracks;
+
+            RecommendedAlbums = tracksResponse.Tracks
+                .Select(t => t.Album)
+                 .Where(a => a.TotalTracks > 1)
+                .GroupBy(a => a.Id)
+                .Select(g => g.First())
+                .ToList();
         }
     }
 }

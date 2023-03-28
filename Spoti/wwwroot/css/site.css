@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Alkatra:wght@700&display=swap');
+
 body {
     font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
@@ -101,4 +103,89 @@ body {
 .card-text {
     font-size: 1rem;
     color: #777;
+}
+.new-releases {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .new-releases img {
+        width: 500px;
+        height: 500px;
+    }
+.spotify-btn {
+    width: 50px;
+    height: 50px;
+}
+
+ 
+
+.new-releases-title {
+    font-family: 'Arial', sans-serif;
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.album-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.album-info {
+    width: 50%;
+    text-align: center;
+}
+
+    .album-info h3 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    .album-info p {
+        font-size: 1.25rem;
+        margin-bottom: 5px;
+    }
+
+.album-cover {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+.album-table {
+    margin-top: 1rem;
+}
+
+    .album-table th, .album-table td {
+        vertical-align: middle;
+    }
+
+.btn-group {
+    margin-top: 0.5rem;
+}
+.logo {
+    font-family: 'Alkatra', sans-serif;
+}
+.album-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.spotify-button img {
+    width: 100px; /* Mo¿esz zmieniæ na inn¹ wartoœæ, aby uzyskaæ po¿¹dany rozmiar */
+    height: 100px; /* Mo¿esz zmieniæ na inn¹ wartoœæ, aby uzyskaæ po¿¹dany rozmiar */
+}
+.navbar-right {
+    margin-left: auto;
+}
+
+.nav-link-accent {
+    font-weight: bold;
+    color: #ff6347;
 }

@@ -8,13 +8,9 @@ namespace Spoti.Pages
 {
     public class IndexModel : PageModel
     {
-        private const int LIMIT = 10;
         private readonly SpotifyClientBuilder _spotifyClientBuilder;
 
-        public Paging<SimplePlaylist> Playlists { get; set; }
-
-        public string Next { get; set; }
-        public string Previous { get; set; }
+        public List<FullAlbum> NewReleases { get; set; }
 
         public IndexModel(SpotifyClientBuilder spotifyClientBuilder)
         {
@@ -33,22 +29,12 @@ namespace Spoti.Pages
             {
                 var spotify = await _spotifyClientBuilder.BuildClient();
 
-                int offset = int.TryParse(Request.Query["Offset"], out offset) ? offset : 0;
-                var playlistRequest = new PlaylistCurrentUsersRequest
+                var newReleasesRequest = new NewReleasesRequest
                 {
-                    Limit = LIMIT,
-                    Offset = offset
+                    Limit = 20
                 };
-                Playlists = await spotify.Playlists.CurrentUsers(playlistRequest);
-
-                if (Playlists.Next != null)
-                {
-                    Next = Url.Page("Index", new { Offset = offset + LIMIT });
-                }
-                if (Playlists.Previous != null)
-                {
-                    Previous = Url.Page("Index", values: new { Offset = offset - LIMIT });
-                }
+                var response = await spotify.Browse.GetNewReleases(newReleasesRequest);
+                NewReleases = response.Albums.Items.Select(album => spotify.Albums.Get(album.Id).Result).ToList();
             }
             catch (InvalidOperationException ex)
             {
@@ -59,4 +45,8 @@ namespace Spoti.Pages
             return Page();
         }
     }
+
+
 }
+
+

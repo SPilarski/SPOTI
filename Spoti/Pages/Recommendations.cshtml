@@ -1,24 +1,35 @@
 ﻿@page
 @model Spoti.Pages.RecommendationsModel
-@{
-    ViewData["Title"] = "Recommendations";
-}
+\
 
 <div class="container">
-    <h2 class="mt-4 mb-4">Recommended Tracks</h2>
     <div class="row">
-        @foreach (var track in Model.RecommendedTracks)
-        {
-            <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
-                    <img src="@track.Album.Images.First().Url" class="card-img-top" alt="@track.Name">
-                    <div class="card-body">
-                        <h5 class="card-title">@track.Name</h5>
-                        <p class="card-text">@track.Artists.First().Name</p>
-                        <a href="@track.ExternalUrls["spotify"]" target="_blank" class="btn btn-primary">Listen on Spotify</a>
+        <div class="col-md-12">
+            @if (Model.NotEnoughListenedTracks)
+            {
+                <h2 class="mt-4 mb-4">Za mało przesłuchanych utworów, lista popularnych albumów:</h2>
+            }
+            else
+            {
+                <h2 class="mt-4 mb-4">Polecane albumy</h2>
+            }
+            <div class="row">
+                @foreach (var album in Model.RecommendedAlbums)
+                {
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm">
+                            <img src="@album.Images.First().Url" class="card-img-top" alt="@album.Name">
+                            <div class="card-body">
+                                <h5 class="card-title">@album.Name</h5>
+                                <p class="card-text">@album.Artists.First().Name</p>
+                                <a href="@album.ExternalUrls["spotify"]" target="_blank" class="btn btn-primary">Listen on Spotify</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
-        }
+        </div>
+
+        </div>
     </div>
 </div>

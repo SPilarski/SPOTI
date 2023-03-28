@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,6 +16,10 @@ namespace Spoti.Pages
     {
         private readonly SpotifyClientBuilder _spotifyClientBuilder;
         private readonly ILogger<ProfileModel> _logger;
+        public IList<Album> RatedAlbums { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 60;
+        public int TotalAlbums { get; set; }
 
         public ProfileModel(SpotifyClientBuilder spotifyClientBuilder, ILogger<ProfileModel> logger)
         {
@@ -25,16 +30,32 @@ namespace Spoti.Pages
         public PrivateUser Me { get; set; }
         public IList<FullAlbum> LastFiveAlbums { get; set; }
 
-        public async Task<IActionResult> OnGet()
+        public async Task<IActionResult> OnGet(int? page)
         {
             await SetMe();
-            await LoadLastFiveAlbums();
-            return Page();
+            await LoadRatedAlbums();
+            await LoadAlbums();
+            return Page(); // Poprawiono na "Page" zamiast "page"
+        }
+        private async Task LoadRatedAlbums()
+        {
+            using (var db = new ApplicationDbContext())
+            {
+                var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == Me.Id);
+                if (user != null)
+                {
+                    RatedAlbums = await db.Albums.Where(a => a.UserId == user.UserId).ToListAsync();
+                }
+                else
+                {
+                    RatedAlbums = new List<Album>();
+                }
+            }
         }
 
-        public async Task<IActionResult> OnPostSaveAlbumAsync(string spotifyAlbumId, string name, string artist, string imageUrl)
+        public async Task<IActionResult> OnPostSaveAlbumAsync(string spotifyAlbumId, string name, string artist, string imageUrl, int rating)
         {
-            await SetMe(); // Add this line to set the `Me` property
+            await SetMe();
 
             using (var db = new ApplicationDbContext())
             {
@@ -46,8 +67,11 @@ namespace Spoti.Pages
                     await db.SaveChangesAsync();
                 }
 
-                var random = new Random();
-                var rating = random.NextDouble() * 5; // Random rating between 0 and 5
+                var existingAlbum = await db.Albums.FirstOrDefaultAsync(a => a.SpotifyAlbumId == spotifyAlbumId && a.UserId == user.UserId);
+                if (existingAlbum != null)
+                {
+                    return RedirectToPage(); // Return to the page without adding the album if it already exists
+                }
 
                 var album = new Album
                 {
@@ -78,7 +102,7 @@ namespace Spoti.Pages
             Me = await spotify.UserProfile.Current();
         }
 
-        private async Task LoadLastFiveAlbums()
+        private async Task LoadAlbums()
         {
             var spotify = await _spotifyClientBuilder.BuildClient();
 
@@ -91,17 +115,24 @@ namespace Spoti.Pages
             // Extract unique albums
             var albumIds = new HashSet<string>();
             LastFiveAlbums = new List<FullAlbum>();
+            int currentIndex = 0;
             foreach (var item in recentlyPlayed.Items)
             {
-                if (albumIds.Add(item.Track.Album.Id))
+                if (item.Track != null && item.Track.Album != null && item.Track.Album.AlbumType == "album" && albumIds.Add(item.Track.Album.Id))
                 {
-                    LastFiveAlbums.Add(await spotify.Albums.Get(item.Track.Album.Id));
-                    if (LastFiveAlbums.Count >= 20)
+                    if (currentIndex < PageSize)
+                    {
+                        LastFiveAlbums.Add(await spotify.Albums.Get(item.Track.Album.Id));
+                    }
+                    currentIndex++;
+                    if (LastFiveAlbums.Count >= PageSize)
                     {
                         break;
                     }
                 }
             }
         }
+
+
     }
 }

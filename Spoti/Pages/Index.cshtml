@@ -1,48 +1,37 @@
 ﻿@page
 @model IndexModel
 @inject SpotifyClientBuilder spotifyBuilder
-@{
-    ViewData["Title"] = "Home";
-    ViewData["Page"] = "index";
-}
+
+
 
 <div class="text-center">
-    <h1 class="display-4">
-        Welcome,
-    </h1>
+   
+    <h1 class="new-releases-title">Najnowsze premiery:</h1>
+    <div class="new-releases">
+        @{
+            bool isAlbumOnLeft = true;
+            foreach (var album in Model.NewReleases)
+            {
+                <div class="album-container" style="flex-direction: @(isAlbumOnLeft ? "row" : "row-reverse")">
+                    <div class="album-info">
+                        @if (album.Images.Any())
+                        {
+                            <img src="@album.Images[0].Url" alt="@album.Name by @album.Artists[0].Name">
+                        }
+                    </div>
+                    <div class="album-info">
+                        <h3>@album.Artists[0].Name</h3>
+                        <p>@album.Name</p>
+                    </div>
+                    <div class="spotify-button">
+                        <a href="@album.ExternalUrls["spotify"]" target="_blank">
+                            <img src="~/spotify.png" class="listen spotify-btn" alt="Go to Spotify Album" width="50" height="50" />
+                        </a>
+                    </div>
+                </div>
 
-    <table class="pure-table">
-        <thead>
-            <tr>
-                <th>Image</th>
-                <th>Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            @{
-                foreach (var item in Model.Playlists.Items)
-                {
-                    <tr>
-                        <td>
-                            @if (item.Images.Any())
-                            {
-                                <img width="100" height="100" src="@item.Images[0].Url">
-                            }
-                        </td>
-                        <td>
-                            @item.Name
-                        </td>
-                    </tr>
-                }
+                isAlbumOnLeft = !isAlbumOnLeft;
             }
-        </tbody>
-    </table>
-    @if (Model.Previous != null)
-    {
-        <a href="@Model.Previous">Previous</a>
-    }
-    @if (Model.Next != null)
-    {
-        <a href="@Model.Next">Next</a>
-    }
+        }
+    </div>
 </div>
