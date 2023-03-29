@@ -35,7 +35,7 @@ namespace Spoti.Pages
             await SetMe();
             await LoadRatedAlbums();
             await LoadAlbums();
-            return Page(); // Poprawiono na "Page" zamiast "page"
+            return Page(); 
         }
         private async Task LoadRatedAlbums()
         {
@@ -70,7 +70,7 @@ namespace Spoti.Pages
                 var existingAlbum = await db.Albums.FirstOrDefaultAsync(a => a.SpotifyAlbumId == spotifyAlbumId && a.UserId == user.UserId);
                 if (existingAlbum != null)
                 {
-                    return RedirectToPage(); // Return to the page without adding the album if it already exists
+                    return RedirectToPage(); 
                 }
 
                 var album = new Album

@@ -59,7 +59,7 @@ namespace Spoti.Pages
             }
 
             await LoadUserAlbums();
-            return RedirectToPage(); // Przekieruj na tê sam¹ stronê, aby unikn¹æ zmiany adresu URL.
+            return RedirectToPage(); 
         }
 
         private async Task LoadUserAlbums()

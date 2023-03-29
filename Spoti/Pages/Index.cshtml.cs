@@ -21,7 +21,7 @@ namespace Spoti.Pages
         {
             if (!User.Identity.IsAuthenticated)
             {
-                // Redirect to the login page or display an appropriate message
+              
                 return RedirectToPage("/Login");
             }
 
@@ -38,8 +38,7 @@ namespace Spoti.Pages
             }
             catch (InvalidOperationException ex)
             {
-                // Handle the error by displaying a message or logging the exception
-                // For example, you can set an ErrorMessage property and display it on the page
+                
             }
 
             return Page();

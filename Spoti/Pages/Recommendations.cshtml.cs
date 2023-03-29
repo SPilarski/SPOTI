@@ -30,25 +30,50 @@ namespace Spoti.Pages
             await GetRecommendations(recommendationType);
         }
 
-        public async Task<IActionResult> OnGetCreatePlaylist()
+        public async Task<IActionResult> OnGetCreatePlaylist(string recommendationType = "recent")
         {
-            await GetRecommendations();
+            await GetRecommendations(recommendationType);
 
             var spotify = await _spotifyClientBuilder.BuildClient();
             var user = await spotify.UserProfile.Current();
             var playlistName = "Rekomendacje";
 
-            // Create a new playlist
+         
             var playlist = await spotify.Playlists.Create(user.Id, new PlaylistCreateRequest(playlistName));
 
-            // Get top 10 recommended tracks
-            var topRecommendedTracks = RecommendedTracks.Take(15).Select(t => t.Uri).ToList();
+     
+            List<string> topRecommendedTracks;
+            if (!NotEnoughListenedTracks)
+            {
+                topRecommendedTracks = RecommendedTracks.Take(15).Select(t => t.Uri).ToList();
+            }
+            else
+            {
+                topRecommendedTracks = new List<string>();
+                int trackCount = 0;
+                foreach (var album in RecommendedAlbums)
+                {
+                    var albumTracks = await spotify.Albums.GetTracks(album.Id);
+                    var albumTrackUris = albumTracks.Items.Select(t => t.Uri).ToList();
+                    topRecommendedTracks.AddRange(albumTrackUris);
+                    trackCount += albumTrackUris.Count;
 
-            // Add tracks to the playlist
+                    if (trackCount >= 15)
+                    {
+                        topRecommendedTracks = topRecommendedTracks.Take(15).ToList();
+                        break;
+                    }
+                }
+            }
+
+          
             await spotify.Playlists.AddItems(playlist.Id, new PlaylistAddItemsRequest(topRecommendedTracks));
 
             return RedirectToPage("./Recommendations");
         }
+
+
+
 
         private async Task GetRecommendations(string recommendationType = "recent")
         {
@@ -72,7 +97,7 @@ namespace Spoti.Pages
             {
                 NotEnoughListenedTracks = true;
 
-                // Pobierz popularne albumy (przyk³ad z 20 popularnych albumów)
+              
                 var popularAlbums = await spotify.Browse.GetNewReleases(new NewReleasesRequest { Limit = 20 });
                 RecommendedAlbums = popularAlbums.Albums.Items;
 
