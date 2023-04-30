@@ -45,7 +45,7 @@ namespace Spoti.Pages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostEditAlbumRatingAsync(int albumId, int rating)
+        public async Task<IActionResult> OnPostEditAlbumRatingAsync(int albumId, float rating)
         {
             using (var db = new ApplicationDbContext())
             {
@@ -84,10 +84,7 @@ namespace Spoti.Pages
                 {
                     albumsQuery = albumsQuery.OrderByDescending(a => a.Rating);
                 }
-                else
-                {
-                    albumsQuery = albumsQuery.OrderBy(a => a.Rating);
-                }
+               
 
                 var albumsWithoutImageUrl = await albumsQuery.ToListAsync();
 

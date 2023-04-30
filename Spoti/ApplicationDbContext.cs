@@ -8,6 +8,6 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=DESKTOP-9HL0FUT;Database=test;Trusted_Connection=True;TrustServerCertificate=true");
+        optionsBuilder.UseSqlServer("Server=LAPTOP-SMD5MSK3;Database=SPOTI;Trusted_Connection=True;TrustServerCertificate=true");
     }
 }

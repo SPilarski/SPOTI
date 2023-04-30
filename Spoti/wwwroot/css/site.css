@@ -207,3 +207,12 @@ body {
     .table-actions button {
         margin-right: 5px;
     }
+.star-rating .fa {
+    color: gold;
+}
+i.star-on-png {
+    color: gold;
+}
+.fa-star:before {
+    content: "\f005";
+}

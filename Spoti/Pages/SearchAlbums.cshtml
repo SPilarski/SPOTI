@@ -48,7 +48,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="ratingModalLabel">Rate Album</h5>
+                <h5 class="modal-title" id="ratingModalLabel">Oceń album</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -60,18 +60,14 @@
                     <input type="hidden" id="modalArtist" name="artist" />
                     <input type="hidden" id="modalImageUrl" name="imageUrl" />
                     <div class="form-group">
-                        <label for="rating">Rating (1-10):</label>
-                        <select class="form-control" id="rating" name="rating">
-                            @for (int i = 1; i <= 10; i++)
-                            {
-                                <option value="@i">@i</option>
-                            }
-                        </select>
+                        <label for="rating">Ocena:</label>
+                        <div id="star-rating" class="star-rating"></div>
+                        <input type="hidden" id="rating" name="rating" class="rating" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" asp-page-handler="SaveAlbum" class="btn btn-primary">Save Rating</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Anuluj</button>
+                    <button type="submit" asp-page-handler="SaveAlbum" class="btn btn-primary">Zapisz</button>
                 </div>
             </form>
         </div>
@@ -80,6 +76,22 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            $('#star-rating').raty({
+                half: false,
+                starType: 'i',
+                score: 0,
+                iconClasses: {
+                    base: 'fa',
+                    starEmpty: 'fa-star-o',
+                    starHalf: 'fa-star-half-o',
+                    starFull: 'fa-star'
+                },
+                click: function (score) {
+                    $('#rating').val(score);
+                    console.log(score);
+                }
+            });
+
             $('#ratingModal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var spotifyAlbumId = button.data('spotifyalbumid');
@@ -92,6 +104,15 @@
                 modal.find('#modalName').val(name);
                 modal.find('#modalArtist').val(artist);
                 modal.find('#modalImageUrl').val(imageUrl);
+
+                $('#star-rating').raty('set', { score: 0 });
+            });
+
+            // Dodaj event listener dla zdarzenia "submit" formularza
+            $('#ratingForm').on('submit', function (event) {
+                // Ustaw wartość inputu "rating" przed wysłaniem formularza
+                var currentScore = $('#star-rating').raty('score');
+                $('#rating').val(currentScore);
             });
         });
     </script>

@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\js\raty-main\.github\FUNDING.yml" />
+    <None Include="wwwroot\js\raty-main\.github\workflows\tests.yml" />
     <None Include="wwwroot\spoti.png" />
   </ItemGroup>
 

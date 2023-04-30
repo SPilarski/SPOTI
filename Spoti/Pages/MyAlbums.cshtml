@@ -1,6 +1,9 @@
 ﻿@page
 @model Spoti.Pages.MyAlbumsModel
+<head>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
 
+</head>
 <style>
    
 </style>
@@ -34,12 +37,21 @@
                     </div>
                 </td>
                 <td>@album.Artist</td>
-                <td>@album.Rating</td>
+                <td>
+                    <span>
+                        @for (int i = 0; i < @album.Rating; i++)
+                        {
+                            <i class="fa-solid fa-star" style="color: #ffd700;"></i>
+                        }
+                    </span>
+                </td>
+
                 <td>
                     <div class="table-actions">
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ratingModal" data-albumid="@album.Id" data-name="@album.Name" data-artist="@album.Artist" data-rating="@album.Rating">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ratingModal" data-albumid="@album.Id" data-name="@album.Name" data-artist="@album.Artist" data-rating="@album.Rating" data-spotifyalbumid="@album.SpotifyAlbumId" data-imageurl="@album.ImageUrl">
                             Edytuj ocenę
                         </button>
+
                         <form method="post" class="d-inline">
                             <input type="hidden" name="albumId" value="@album.Id" />
                             <button type="submit" asp-page-handler="DeleteAlbum" class="btn btn-danger">Usuń</button>
@@ -65,13 +77,9 @@
                 <div class="modal-body">
                     <input type="hidden" id="modalAlbumId" name="albumId" />
                     <div class="form-group">
-                        <label for="rating">Rating (0-10):</label>
-                        <select class="form-control" id="rating" name="rating">
-                            @for (int i = 0; i <= 10; i++)
-                            {
-                                <option value="@i">@i</option>
-                            }
-                        </select>
+                        <label for="rating">Ocena:</label>
+                        <div id="star-rating" class="star-rating"></div>
+                        <input type="hidden" id="rating" name="rating" class="rating" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -88,49 +96,88 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            $('#star-rating').raty({
+                half: false,
+                starType: 'i',
+                score: 0,
+                iconClasses: {
+                    base: 'fa',
+                    starEmpty: 'fa-star-o',
+                    starHalf: 'fa-star-half-o',
+                    starFull: 'fa-star'
+                },
+                click: function (score) {
+                    $('#rating').val(score);
+                    console.log(score);
+                }
+            });
+
             $('#ratingModal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var albumId = button.data('albumid');
                 var name = button.data('name');
                 var artist = button.data('artist');
-                var rating = button.data('rating');
+                var imageUrl = button.data('imageurl');
 
                 var modal = $(this);
                 modal.find('#modalAlbumId').val(albumId);
-                modal.find('#rating').val(rating);
+                modal.find('#modalName').val(name);
+                modal.find('#modalArtist').val(artist);
+                modal.find('#modalImageUrl').val(imageUrl);
+
+                $('#star-rating').raty('set', { score: 0 });
+            });
+
+
+            // Dodaj event listener dla zdarzenia "submit" formularza
+            $('#ratingForm').on('submit', function (event) {
+                // Ustaw wartość inputu "rating" przed wysłaniem formularza
+                var currentScore = $('#star-rating').raty('score');
+                $('#rating').val(currentScore);
             });
             function sortTable(columnIndex, compareFunction) {
                 var table = $('.album-table tbody');
                 var rows = table.find('tr').toArray();
 
                 rows.sort(function (a, b) {
-                    var aValue = $(a).find('td:nth-child(' + columnIndex + ')').text();
-                    var bValue = $(b).find('td:nth-child(' + columnIndex + ')').text();
-
+                    var aValue, bValue;
+                    if (columnIndex === 2) { // sortuj po ocenie
+                        // wartość oceny to ilość wypełnionych gwiazdek
+                        aValue = $(a).find('.fa-star').length;
+                        bValue = $(b).find('.fa-star').length;
+                    } else { // sortuj alfabetycznie po nazwie albumu lub artyście
+                        aValue = $(a).find('td').eq(columnIndex).text().toLowerCase();
+                        bValue = $(b).find('td').eq(columnIndex).text().toLowerCase();
+                    }
                     return compareFunction(aValue, bValue);
                 });
 
-                rows.forEach(function (row) {
+                $.each(rows, function (index, row) {
                     table.append(row);
                 });
             }
 
-            var albumSortDescending = true;
-            $('th:nth-child(1)').on('click', function () {
-                sortTable(1, albumSortDescending ? (a, b) => b.localeCompare(a) : (a, b) => a.localeCompare(b));
-                albumSortDescending = !albumSortDescending;
-            });
+            $('.album-table th').click(function () {
+                var columnIndex = $(this).index();
+                var sortOrder = $(this).data('sort-order') || 'asc';
 
-            var artistSortDescending = true;
-            $('th:nth-child(2)').on('click', function () {
-                sortTable(2, artistSortDescending ? (a, b) => b.localeCompare(a) : (a, b) => a.localeCompare(b));
-                artistSortDescending = !artistSortDescending;
-            });
+                if (sortOrder === 'asc') {
+                    sortTable(columnIndex, function (a, b) {
+                        return a < b ? -1 : a > b ? 1 : 0;
+                    });
+                    $(this).data('sort-order', 'desc');
+                    $(this).find('.fa-sort').removeClass('fa-sort').addClass('fa-sort-up');
+                } else {
+                    sortTable(columnIndex, function (a, b) {
+                        return a > b ? -1 : a < b ? 1 : 0;
+                    });
+                    $(this).data('sort-order', 'asc');
+                    $(this).find('.fa-sort-up').removeClass('fa-sort-up').addClass('fa-sort');
+                }
 
-            var ratingSortDescending = true;
-            $('th:nth-child(3)').on('click', function () {
-                sortTable(3, ratingSortDescending ? (a, b) => parseInt(b) - parseInt(a) : (a, b) => parseInt(a) - parseInt(b));
-                ratingSortDescending = !ratingSortDescending;
+                $(this).siblings().data('sort-order', null);
+                $(this).siblings().find('.fa-sort-up').removeClass('fa-sort-up').addClass('fa-sort');
+                $(this).siblings().find('.fa-sort').removeClass('fa-sort').addClass('fa-sort-down');
             });
         });
     </script>

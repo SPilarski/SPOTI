@@ -18,6 +18,7 @@ namespace Spoti.Pages
         private readonly ILogger<ProfileModel> _logger;
         public IList<Album> RatedAlbums { get; set; }
         public int Page { get; set; } = 1;
+
         public int PageSize { get; set; } = 60;
         public int TotalAlbums { get; set; }
 
@@ -90,11 +91,6 @@ namespace Spoti.Pages
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPost()
-        {
-            await HttpContext.SignOutAsync();
-            return Redirect("https://google.com");
-        }
 
         private async Task SetMe()
         {
@@ -112,7 +108,7 @@ namespace Spoti.Pages
             };
             var recentlyPlayed = await spotify.Player.GetRecentlyPlayed(recentlyPlayedRequest);
 
-            // Extract unique albums
+           
             var albumIds = new HashSet<string>();
             LastFiveAlbums = new List<FullAlbum>();
             int currentIndex = 0;
